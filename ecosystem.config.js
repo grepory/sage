@@ -15,12 +15,12 @@ module.exports = {
   }],
   deploy: {
     production: {
-      user: 'deploy',
-      host: 'mother',
-      ref: 'origin/main',
-      repo: 'https://github.com/grepory/ragu.git',
-      path: '/Users/deploy/apps/ragu',
-      'post-deploy': `
+      "user": 'deploy',
+      "host": 'mother',
+      "ref": 'origin/main',
+      "repo": 'https://github.com/grepory/ragu.git',
+      "path": '/Users/deploy/apps/ragu',
+      "post-deploy": `
         # Activate venv and install requirements
         source ../shared/venv/bin/activate &&
         pip install --upgrade pip &&
