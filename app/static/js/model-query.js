@@ -29,7 +29,7 @@ const ModelQueryComponent = {
                             <div class="message-header mb-1">
                                 <small class="fw-bold">
                                     <i :class="['bi me-1', message.role === 'user' ? 'bi-person-circle' : 'bi-robot']"></i>
-                                    {{ message.role === 'user' ? 'You' : 'Assistant' }}
+                                    {{ message.role === 'user' ? 'You' : 'Sage' }}
                                 </small>
                             </div>
                             <div class="message-content">
@@ -55,7 +55,7 @@ const ModelQueryComponent = {
                             <div class="message-header mb-1">
                                 <small class="fw-bold">
                                     <i class="bi bi-robot me-1"></i>
-                                    Assistant
+                                    Sage
                                 </small>
                             </div>
                             <div class="message-content">
