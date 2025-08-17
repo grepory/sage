@@ -2195,6 +2195,20 @@ main {
     }
 }
 
+/* Pulsing animation for "Sage is typing..." text */
+@keyframes gentle-pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.6;
+    }
+}
+
+.typing-text-pulse {
+    animation: gentle-pulse 1.5s ease-in-out infinite;
+}
+
 /* New Tag Selector Dropdown Styles */
 .tag-selector-dropdown {
     position: relative;

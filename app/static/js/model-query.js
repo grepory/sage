@@ -28,7 +28,7 @@ const ModelQueryComponent = {
                              :class="['message mb-2 p-2 rounded', message.role === 'user' ? 'user-message text-end' : 'assistant-message']">
                             <div class="message-header mb-1">
                                 <small class="fw-bold">
-                                    <i :class="['bi me-1', message.role === 'user' ? 'bi-person-circle' : 'bi-robot']"></i>
+                                    <i v-if="message.role === 'user'" class="bi bi-person-circle me-1"></i>
                                     {{ message.role === 'user' ? 'You' : 'Sage' }}
                                 </small>
                             </div>
@@ -54,16 +54,10 @@ const ModelQueryComponent = {
                         <div v-if="isLoading && conversationHistory.length > 0" class="message mb-2 p-2 rounded assistant-message">
                             <div class="message-header mb-1">
                                 <small class="fw-bold">
-                                    <i class="bi bi-robot me-1"></i>
-                                    Sage
+                                    <span class="typing-text-pulse">Sage is typing...</span>
                                 </small>
                             </div>
                             <div class="message-content">
-                                <div class="typing-indicator">
-                                    <span></span>
-                                    <span></span>
-                                    <span></span>
-                                </div>
                             </div>
                         </div>
                     </div>
