@@ -10,13 +10,6 @@ import webbrowser
 import time
 import threading
 
-def open_browser():
-    """Open the browser after a short delay to ensure the server is up."""
-    time.sleep(2)  # Wait for the server to start
-    url = "http://localhost:8000"
-    webbrowser.open(url)
-    print(f"\n✅ Browser opened automatically at {url}")
-
 def main():
     """Run the application with error handling."""
     try:
@@ -32,18 +25,19 @@ def main():
         
         # Try to import and run the application
         from app.main import app
+        from app.core.config import settings
         import uvicorn
+        
+        # Get the configured port
+        port = settings.PORT
         
         # If we get here, the imports succeeded
         print("Starting RAG Management System...")
-        print("\n🌐 Access the application in your browser at: http://localhost:8000")
-        print("   API documentation available at: http://localhost:8000/docs")
-        
-        # Start browser in a separate thread
-        threading.Thread(target=open_browser, daemon=True).start()
+        print(f"\n🌐 Access the application in your browser at: http://localhost:{port}")
+        print(f"   API documentation available at: http://localhost:{port}/docs")
         
         # Run the application
-        uvicorn.run("app.main:app", host="0.0.0.0", port=8000, reload=True)
+        uvicorn.run("app.main:app", host="0.0.0.0", port=port, reload=True)
     except ImportError as e:
         # Handle import errors
         if "cannot import name 'Ollama' from 'llama_index.llms'" in str(e):

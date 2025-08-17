@@ -24,6 +24,12 @@ class Settings(BaseSettings):
     # CORS settings
     BACKEND_CORS_ORIGINS: list[str] = ["*"]
     
+    # Server settings
+    PORT: int = Field(
+        default=int(os.getenv("PORT", 8000)),
+        description="Port for the FastAPI server"
+    )
+    
     # Vector DB settings
     CHROMA_PERSIST_DIRECTORY: str = Field(
         default="./chroma_db",
