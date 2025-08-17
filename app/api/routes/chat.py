@@ -82,33 +82,38 @@ async def websocket_endpoint(websocket: WebSocket):
                         "content": "Generating response..."
                     })
                     
-                    # Generate RAG response with streaming (tag-based)
-                    response_data = await llm_service.generate_rag_response_by_tags(
+                    # Generate RAG response with automatic tag selection and streaming
+                    response_data = await llm_service.generate_rag_response_by_tags_with_auto_selection(
                         query=query,
                         tags=tags,
                         include_untagged=include_untagged,
                         history=history,
                         model=model,
                         streaming=True,
-                        callback_handler=callback_handler
+                        callback_handler=callback_handler,
+                        auto_select_tags=True
                     )
                     
                     # Save or update the conversation
                     updated_history = response_data["history"]
+                    enhanced_tags = response_data.get("selected_tags", tags)
                     
                     if conversation_id:
-                        # Update existing conversation
+                        # Update existing conversation with enhanced tags
                         conversation_store.update_conversation(
                             conversation_id,
-                            update=ConversationUpdate(messages=updated_history)
+                            update=ConversationUpdate(
+                                messages=updated_history,
+                                tags=enhanced_tags
+                            )
                         )
                     else:
-                        # Create a new conversation
+                        # Create a new conversation with enhanced tags
                         new_conversation = ConversationCreate(
                             collection_name=None,  # Deprecated
                             model=model,
                             messages=updated_history,
-                            tags=tags,
+                            tags=enhanced_tags,
                             include_untagged=include_untagged
                         )
                         
@@ -131,7 +136,9 @@ async def websocket_endpoint(websocket: WebSocket):
                                 {"role": msg.role, "content": msg.content}
                                 for msg in response_data["history"]
                             ],
-                            "conversation_id": conversation_id
+                            "conversation_id": conversation_id,
+                            "selected_tags": response_data.get("selected_tags", tags),
+                            "auto_selected_tags": response_data.get("auto_selected_tags", [])
                         }
                     })
                 
@@ -199,31 +206,36 @@ async def chat(request: ChatRequest):
             if not request.history:
                 history = conversation.messages
         
-        # Generate RAG response using tags
-        response_data = await llm_service.generate_rag_response_by_tags(
+        # Generate RAG response using automatic tag selection
+        response_data = await llm_service.generate_rag_response_by_tags_with_auto_selection(
             query=request.query,
             tags=request.tags,
             include_untagged=request.include_untagged,
             history=history,
-            model=request.model
+            model=request.model,
+            auto_select_tags=True
         )
         
         # Save or update the conversation
         updated_history = response_data["history"]
+        enhanced_tags = response_data.get("selected_tags", request.tags)
         
         if conversation_id:
-            # Update existing conversation
+            # Update existing conversation with enhanced tags
             conversation_store.update_conversation(
                 conversation_id,
-                update=ConversationUpdate(messages=updated_history)
+                update=ConversationUpdate(
+                    messages=updated_history,
+                    tags=enhanced_tags
+                )
             )
         else:
-            # Create a new conversation
+            # Create a new conversation with enhanced tags
             new_conversation = ConversationCreate(
                 collection_name=None,  # Deprecated
                 model=request.model,
                 messages=updated_history,
-                tags=request.tags,
+                tags=enhanced_tags,
                 include_untagged=request.include_untagged
             )
             
@@ -240,7 +252,9 @@ async def chat(request: ChatRequest):
             answer=response_data["answer"],
             sources=response_data["sources"],
             history=response_data["history"],
-            conversation_id=conversation_id
+            conversation_id=conversation_id,
+            selected_tags=response_data.get("selected_tags"),
+            auto_selected_tags=response_data.get("auto_selected_tags")
         )
     
     except HTTPException:

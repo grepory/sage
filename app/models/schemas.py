@@ -113,6 +113,8 @@ class ChatResponse(BaseModel):
     sources: List[Dict[str, Any]] = Field(..., description="Source documents used for the response")
     history: List[ChatMessage] = Field(..., description="Updated chat history")
     conversation_id: Optional[str] = Field(None, description="ID of the conversation")
+    selected_tags: Optional[List[str]] = Field(None, description="All tags used for the query (including auto-selected)")
+    auto_selected_tags: Optional[List[str]] = Field(None, description="Tags that were automatically selected")
 
 
 # Conversation schemas

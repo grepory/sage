@@ -624,6 +624,78 @@ Suggested tags:"""
         
         # Return up to max_tags
         return unique_tags[:max_tags]
+    
+    async def generate_rag_response_by_tags_with_auto_selection(
+        self,
+        query: str,
+        tags: Optional[List[str]] = None,
+        include_untagged: bool = True,
+        history: Optional[List[ChatMessage]] = None,
+        model: Optional[str] = None,
+        streaming: bool = False,
+        callback_handler: Optional[StreamingCallbackHandler] = None,
+        n_results: int = 5,
+        auto_select_tags: bool = True
+    ) -> Dict[str, Any]:
+        """Generate RAG response with automatic tag selection based on query content.
+        
+        Args:
+            query: User query
+            tags: Initial list of tags (will be enhanced with auto-selected ones)
+            include_untagged: Whether to include untagged documents
+            history: Optional chat history
+            model: Optional model name or provider:model
+            streaming: Whether to stream responses
+            callback_handler: Callback handler for streaming
+            n_results: Number of results to retrieve from vector DB
+            auto_select_tags: Whether to automatically select additional tags
+            
+        Returns:
+            Response data with answer, sources, and enhanced tag list
+        """
+        enhanced_tags = tags[:] if tags else []
+        
+        if auto_select_tags:
+            # Import here to avoid circular imports
+            from app.services.tag_classifier import tag_classifier
+            
+            # Convert history to the format expected by tag classifier
+            history_for_classifier = []
+            if history:
+                history_for_classifier = [
+                    {"role": msg.role, "content": msg.content} for msg in history
+                ]
+            
+            # Get recommended tags based on query and conversation context
+            recommended_tags = await tag_classifier.get_contextual_tags_for_conversation(
+                query=query,
+                conversation_history=history_for_classifier,
+                current_tags=enhanced_tags,
+                model=model
+            )
+            
+            # Add recommended tags to the existing tags
+            for tag in recommended_tags:
+                if tag not in enhanced_tags:
+                    enhanced_tags.append(tag)
+        
+        # Use the enhanced tag list for the RAG response
+        result = await self.generate_rag_response_by_tags(
+            query=query,
+            tags=enhanced_tags,
+            include_untagged=include_untagged,
+            history=history,
+            model=model,
+            streaming=streaming,
+            callback_handler=callback_handler,
+            n_results=n_results
+        )
+        
+        # Add the enhanced tags to the response
+        result["selected_tags"] = enhanced_tags
+        result["auto_selected_tags"] = [tag for tag in enhanced_tags if tag not in (tags or [])]
+        
+        return result
 
 
 # Create a singleton instance

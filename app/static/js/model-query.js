@@ -740,12 +740,22 @@ const ModelQueryComponent = {
                     // Update last sources
                     lastSources.value = data.sources;
                     
+                    // Update selected tags if auto-selection occurred
+                    if (data.selected_tags && Array.isArray(data.selected_tags)) {
+                        selectedTags.value = data.selected_tags;
+                    }
+                    
+                    // Show notification for auto-selected tags
+                    if (data.auto_selected_tags && data.auto_selected_tags.length > 0) {
+                        console.log('Auto-selected tags for this query:', data.auto_selected_tags.join(', '));
+                        showAutoTagNotification(data.auto_selected_tags);
+                    }
+                    
                     // Update current conversation ID if provided
                     if (data.conversation_id) {
                         currentConversationId.value = data.conversation_id;
                         
-                        // Update conversation with current tag preferences
-                        // This ensures the conversation maintains the current tag selection state
+                        // Update conversation with current tag preferences (now including auto-selected tags)
                         updateConversationTagPreferences(currentConversationId.value);
                     }
                     
@@ -927,11 +937,22 @@ const ModelQueryComponent = {
                     // Update last sources
                     lastSources.value = data.sources;
                     
+                    // Update selected tags if auto-selection occurred
+                    if (data.selected_tags && Array.isArray(data.selected_tags)) {
+                        selectedTags.value = data.selected_tags;
+                    }
+                    
+                    // Show notification for auto-selected tags
+                    if (data.auto_selected_tags && data.auto_selected_tags.length > 0) {
+                        console.log('Auto-selected tags for retry:', data.auto_selected_tags.join(', '));
+                        showAutoTagNotification(data.auto_selected_tags);
+                    }
+                    
                     // Update current conversation ID if provided
                     if (data.conversation_id) {
                         currentConversationId.value = data.conversation_id;
                         
-                        // Update conversation with current tag preferences
+                        // Update conversation with current tag preferences (now including auto-selected tags)
                         updateConversationTagPreferences(currentConversationId.value);
                     }
                     
@@ -976,6 +997,38 @@ const ModelQueryComponent = {
             });
             
             return marked.parse(content);
+        };
+        
+        // Show notification for auto-selected tags
+        const showAutoTagNotification = (autoSelectedTags) => {
+            if (!autoSelectedTags || autoSelectedTags.length === 0) return;
+            
+            // Create a temporary notification element
+            const notification = document.createElement('div');
+            notification.className = 'alert alert-info alert-dismissible fade show position-fixed';
+            notification.style.cssText = 'top: 20px; right: 20px; z-index: 1050; max-width: 300px; box-shadow: 0 4px 8px rgba(0,0,0,0.15);';
+            
+            const tagList = autoSelectedTags.map(tag => `<span class="badge" style="background-color: var(--salon-drab); margin-right: 4px;">${tag}</span>`).join('');
+            
+            notification.innerHTML = `
+                <div class="d-flex align-items-start">
+                    <i class="bi bi-magic text-primary me-2 mt-1"></i>
+                    <div class="flex-grow-1">
+                        <div class="fw-bold mb-1">Tags Added Automatically</div>
+                        <div class="small">${tagList}</div>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            // Auto-dismiss after 5 seconds
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.remove();
+                }
+            }, 5000);
         };
         
         // Cleanup event listener
