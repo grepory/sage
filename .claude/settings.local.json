@@ -1,0 +1,29 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__playwright__browser_click",
+      "mcp__playwright__browser_take_screenshot",
+      "mcp__playwright__browser_evaluate",
+      "mcp__playwright__browser_snapshot",
+      "mcp__playwright__browser_close",
+      "Bash(curl:*)",
+      "Bash(python test:*)",
+      "Bash(python:*)",
+      "mcp__playwright__browser_navigate",
+      "mcp__playwright__browser_resize",
+      "mcp__playwright__browser_console_messages",
+      "mcp__playwright__browser_handle_dialog",
+      "mcp__playwright__browser_press_key",
+      "mcp__playwright__browser_tab_new",
+      "Bash(echo)",
+      "Bash(pkill:*)",
+      "mcp__playwright__browser_type",
+      "Bash(grep:*)",
+      "Bash(lsof:*)",
+      "mcp__playwright__browser_file_upload",
+      "mcp__playwright__browser_wait_for",
+      "Bash(pip install:*)"
+    ]
+  },
+  "enableAllProjectMcpServers": false
+}
