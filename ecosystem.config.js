@@ -20,16 +20,7 @@ module.exports = {
       "ref": 'origin/main',
       "repo": 'https://github.com/grepory/ragu.git',
       "path": '/Users/deploy/apps/ragu',
-      "post-deploy": `
-        source ../shared/venv/bin/activate &&
-        pip install --upgrade pip &&
-        pip install -r requirements.txt &&
-        ln -sfn ../shared/chromadb ./chromadb &&
-        ln -sfn ../shared/venv ./venv &&
-        cp ../.env .env &&
-        /usr/local/bin/pm2 reload ecosystem.config.js --env production &&
-        /usr/local/bin/node /Users/deploy/bin/update-caddy-config.js
-      `
+      "post-deploy": "echo 'Installing dependencies...' && source ../shared/venv/bin/activate && pip install --upgrade pip && pip install -r requirements.txt && echo 'Creating symlinks...' && ln -sfn ../shared/chromadb ./chromadb && echo 'Copying .env...' && cp ../.env .env && echo 'Starting application...' && pm2 startOrRestart ecosystem.config.js --env production && echo 'Updating Caddy...' && /usr/local/bin/node /Users/deploy/bin/update-caddy-config.js && echo 'Deployment complete!'",
     }
   }
 };
