@@ -4,3 +4,4 @@ __pycache__
 chroma_db
 .claude
 app.log
+ecosystem.config.js
