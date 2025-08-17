@@ -426,7 +426,7 @@ const ModelQueryComponent = {
         // Fetch available tags from API
         const fetchTags = async () => {
             try {
-                const response = await fetch('/api/v1/tags/');
+                const response = await fetch(`${window.BASE_URL || ''}/api/v1/tags/`);
                 if (response.ok) {
                     const data = await response.json();
                     availableTags.value = data.tags || [];
@@ -513,7 +513,7 @@ const ModelQueryComponent = {
             if (!collectionName) return;
             
             try {
-                const response = await fetch('/api/v1/collections/', {
+                const response = await fetch(`${window.BASE_URL || ''}/api/v1/collections/`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -543,7 +543,7 @@ const ModelQueryComponent = {
             error.value = '';
             
             try {
-                const response = await fetch('/api/v1/conversations/');
+                const response = await fetch(`${window.BASE_URL || ''}/api/v1/conversations/`);
                 if (response.ok) {
                     const data = await response.json();
                     conversations.value = data.conversations || [];
@@ -562,7 +562,7 @@ const ModelQueryComponent = {
         // Select a conversation
         const selectConversation = async (conversationId) => {
             try {
-                const response = await fetch(`/api/v1/conversations/${conversationId}`);
+                const response = await fetch(`${window.BASE_URL || ''}/api/v1/conversations/${conversationId}`);
                 if (response.ok) {
                     const conversation = await response.json();
                     
@@ -638,7 +638,7 @@ const ModelQueryComponent = {
                     include_untagged: includeUntagged.value
                 };
                 
-                const response = await fetch(`/api/v1/conversations/${conversationId}`, {
+                const response = await fetch(`${window.BASE_URL || ''}/api/v1/conversations/${conversationId}`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json'
@@ -722,7 +722,7 @@ const ModelQueryComponent = {
                 }
                 
                 // Send request to chat API
-                const response = await fetch('/api/v1/chat/', {
+                const response = await fetch(`${window.BASE_URL || ''}/api/v1/chat/`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -843,7 +843,7 @@ const ModelQueryComponent = {
         const deleteConversation = async (conversationId) => {
             try {
                 // Send request to delete the conversation
-                const response = await fetch(`/api/v1/conversations/${conversationId}`, {
+                const response = await fetch(`${window.BASE_URL || ''}/api/v1/conversations/${conversationId}`, {
                     method: 'DELETE'
                 });
                 
@@ -909,7 +909,7 @@ const ModelQueryComponent = {
                 }
                 
                 // Send request to chat API
-                const response = await fetch('/api/v1/chat/', {
+                const response = await fetch(`${window.BASE_URL || ''}/api/v1/chat/`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'

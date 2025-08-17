@@ -14,6 +14,7 @@ app = FastAPI(
     openapi_url=f"{settings.API_V1_STR}/openapi.json",
     docs_url=None,  # Disable default docs
     redoc_url=None,  # Disable default redoc
+    root_path=settings.ROOT_PATH,  # Support for reverse proxy
 )
 
 # Mount static files directory
@@ -50,7 +51,10 @@ async def health_check():
 # Frontend route
 @app.get("/", response_class=HTMLResponse)
 async def frontend(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request})
+    return templates.TemplateResponse("index.html", {
+        "request": request, 
+        "root_path": settings.ROOT_PATH
+    })
 
 if __name__ == "__main__":
     import uvicorn

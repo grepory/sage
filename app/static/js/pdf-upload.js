@@ -22,7 +22,7 @@ const PDFUpload = () => {
     // Fetch collections from API
     const fetchCollections = async () => {
         try {
-            const response = await fetch('/api/v1/collections/');
+            const response = await fetch(`${window.BASE_URL || ''}/api/v1/collections/`);
             if (response.ok) {
                 const data = await response.json();
                 setCollections(data.collections || []);
@@ -151,7 +151,7 @@ const PDFUpload = () => {
                     formData.append('tags', tags);
                 }
                 
-                const response = await fetch('/api/v1/documents/upload', {
+                const response = await fetch(`${window.BASE_URL || ''}/api/v1/documents/upload`, {
                     method: 'POST',
                     body: formData
                 });
@@ -196,7 +196,7 @@ const PDFUpload = () => {
         if (!collectionName) return;
         
         try {
-            const response = await fetch('/api/v1/collections/', {
+            const response = await fetch(`${window.BASE_URL || ''}/api/v1/collections/`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'

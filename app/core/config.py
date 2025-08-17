@@ -29,6 +29,10 @@ class Settings(BaseSettings):
         default=int(os.getenv("PORT", 8000)),
         description="Port for the FastAPI server"
     )
+    ROOT_PATH: str = Field(
+        default=os.getenv("ROOT_PATH", ""),
+        description="Root path prefix for reverse proxy setup (e.g., '/ragu' for http://host/ragu/)"
+    )
     
     # Vector DB settings
     CHROMA_PERSIST_DIRECTORY: str = Field(
