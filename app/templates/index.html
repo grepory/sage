@@ -65,6 +65,9 @@
             </div>
         </div>
         
+        <!-- Mobile sidebar backdrop -->
+        <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
+        
         <!-- Sidebar -->
         <div class="sidebar" id="sidebar">
             <div class="sidebar-header">
@@ -982,6 +985,7 @@
             // Sidebar functionality with error handling
             const sidebar = document.getElementById('sidebar');
             const sidebarToggleBtn = document.getElementById('sidebar-toggle-btn');
+            const sidebarBackdrop = document.getElementById('sidebar-backdrop');
             const newConversationBtn = document.getElementById('new-conversation-btn');
             const conversationHistorySidebar = document.getElementById('conversation-history-sidebar');
             const mainContent = document.querySelector('.main-content');
@@ -991,10 +995,22 @@
             if (sidebarToggleBtn && sidebar && mainContent) {
                 sidebarToggleBtn.addEventListener('click', function() {
                     console.log('Sidebar toggle clicked');
+                    const isMobile = window.innerWidth <= 480;
+                    
                     sidebar.classList.toggle('hide');
-                    mainContent.classList.toggle('sidebar-hidden');
-                    if (chatInputArea) {
-                        chatInputArea.classList.toggle('sidebar-hidden');
+                    
+                    if (isMobile) {
+                        // On mobile, toggle backdrop
+                        if (sidebarBackdrop) {
+                            sidebarBackdrop.classList.toggle('show');
+                        }
+                        // Main content and chat input always stay full width on mobile
+                    } else {
+                        // On desktop, adjust main content position
+                        mainContent.classList.toggle('sidebar-hidden');
+                        if (chatInputArea) {
+                            chatInputArea.classList.toggle('sidebar-hidden');
+                        }
                     }
                     
                     // Update icon based on sidebar state
@@ -1019,22 +1035,31 @@
             // Initialize sidebar based on screen size
             function initializeSidebar() {
                 const icon = sidebarToggleBtn.querySelector('i');
-                if (window.innerWidth <= 480) {
-                    // On mobile, start with sidebar hidden
+                const isMobile = window.innerWidth <= 480;
+                
+                if (isMobile) {
+                    // On mobile, start with sidebar hidden and backdrop hidden
                     sidebar.classList.add('hide');
+                    if (sidebarBackdrop) {
+                        sidebarBackdrop.classList.remove('show');
+                    }
+                    // Ensure main content is full width on mobile
                     mainContent.classList.add('sidebar-hidden');
                     if (chatInputArea) {
                         chatInputArea.classList.add('sidebar-hidden');
                     }
-                    icon.className = 'bi bi-layout-sidebar';
+                    if (icon) icon.className = 'bi bi-layout-sidebar';
                 } else {
                     // On desktop, start with sidebar open
                     sidebar.classList.remove('hide');
+                    if (sidebarBackdrop) {
+                        sidebarBackdrop.classList.remove('show');
+                    }
                     mainContent.classList.remove('sidebar-hidden');
                     if (chatInputArea) {
                         chatInputArea.classList.remove('sidebar-hidden');
                     }
-                    icon.className = 'bi bi-layout-sidebar-reverse';
+                    if (icon) icon.className = 'bi bi-layout-sidebar-reverse';
                 }
             }
             
@@ -1043,6 +1068,22 @@
             
             // Handle window resize
             window.addEventListener('resize', initializeSidebar);
+            
+            // Handle backdrop click to close sidebar on mobile
+            if (sidebarBackdrop) {
+                sidebarBackdrop.addEventListener('click', function() {
+                    if (window.innerWidth <= 480 && !sidebar.classList.contains('hide')) {
+                        sidebar.classList.add('hide');
+                        sidebarBackdrop.classList.remove('show');
+                        
+                        // Update toggle button icon
+                        const icon = sidebarToggleBtn.querySelector('i');
+                        if (icon) {
+                            icon.className = 'bi bi-layout-sidebar';
+                        }
+                    }
+                });
+            }
             
             // New conversation button with error handling
             if (newConversationBtn) {

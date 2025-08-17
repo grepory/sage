@@ -1377,6 +1377,27 @@ h1 {
     box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
 }
 
+/* Add backdrop for mobile when sidebar is open */
+.sidebar-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1050;
+    display: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+@media (max-width: 480px) {
+    .sidebar-backdrop.show {
+        display: block;
+        opacity: 1;
+    }
+}
+
 .sidebar.hide {
     left: -320px;
 }
@@ -2740,26 +2761,34 @@ main {
 @media (max-width: 480px) {
     .sidebar {
         width: 100%;
+        z-index: 1200; /* Higher z-index to appear above content */
     }
     
     .sidebar.hide {
         left: -100%;
     }
     
+    /* On mobile, main content always takes full width */
     .main-content {
-        left: 0;
+        left: 0 !important;
     }
     
     .main-content.sidebar-hidden {
         left: 0;
     }
     
+    /* Chat input area always at full width on mobile */
     .chat-input-area {
-        left: 0;
+        left: 0 !important;
     }
     
     .chat-input-area.sidebar-hidden {
         left: 0;
+    }
+    
+    /* Add overlay when sidebar is open on mobile */
+    body:has(.sidebar:not(.hide)) {
+        overflow: hidden;
     }
     
     /* Ensure dropdowns work well on mobile */
@@ -2768,8 +2797,17 @@ main {
         gap: 12px;
     }
     
-    /* Always hide sidebar on mobile by default */
-    .sidebar {
-        left: -100%;
+    /* Mobile-specific padding adjustments */
+    .chat-input-area {
+        padding: 8px 12px;
+    }
+    
+    .selection-controls {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .selection-controls > * {
+        width: 100%;
     }
 }
