@@ -2,7 +2,7 @@ module.exports = {
   apps: [{
     name: 'ragu',
     script: '../shared/venv/bin/python',  // Use venv python
-    args: 'app.py',
+    args: 'run_app.py',
     cwd: '/Users/deploy/apps/ragu/current',
     env: {
       PYTHONPATH: '/Users/deploy/apps/ragu/current',
