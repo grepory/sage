@@ -59,7 +59,7 @@ python run_app.py
 ```
 
 This will:
-- Start the server on port 8000
+- Start the server on the configured port (default 8000)
 - Display clear URLs for accessing the application
 - Automatically open your default web browser to the frontend
 
@@ -70,6 +70,42 @@ uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
 The API will be available at http://localhost:8000, and the API documentation at http://localhost:8000/docs.
+
+## Configuration
+
+RAGU can be configured through environment variables in the `.env` file:
+
+### Server Configuration
+
+- `PORT=8000` - Port for the FastAPI server
+- `ROOT_PATH=/ragu` - Root path prefix for reverse proxy setup (e.g., for hosting at http://example.com/ragu/)
+
+### Reverse Proxy Setup
+
+RAGU supports deployment behind reverse proxies. To configure:
+
+1. Set the `ROOT_PATH` environment variable to your proxy path:
+   ```bash
+   ROOT_PATH=/ragu
+   ```
+
+2. Configure your reverse proxy (nginx, Apache, etc.) to forward requests to RAGU
+3. All API calls and static assets will automatically use the configured root path
+
+Example nginx configuration:
+```nginx
+location /ragu/ {
+    proxy_pass http://localhost:8000/;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+}
+```
+
+### LLM Provider Configuration
+
+Configure your preferred LLM providers in the `.env` file:
 
 ## API Documentation
 
@@ -273,12 +309,12 @@ The server will respond with messages in the following formats:
 
 ## Web Interface
 
-RAGU provides a web interface that allows you to interact with the system through your browser. The interface includes:
+RAGU provides a responsive web interface that works seamlessly on desktop and mobile devices. The interface includes:
 
 ### Document Upload
 
 - Upload files using the upload button
-- Add tags to organize your documents
+- Add tags to organize your documents  
 - View upload progress and status
 
 ### Conversational Chat Interface
@@ -286,20 +322,24 @@ RAGU provides a web interface that allows you to interact with the system throug
 The chat interface allows you to have natural conversations with the AI about your documents:
 
 - **Conversation History**: The system maintains the full conversation history, allowing for contextual follow-up questions
-- **Enter Key Support**: Press Enter to send your message (use Shift+Enter for new lines)
+- **Conversation Sidebar**: Browse and manage your chat history with a collapsible sidebar
+- **Enter Key Support**: Press Enter to send your message (use Shift+Enter for new lines)  
 - **Visual Distinction**: User and assistant messages are visually distinct for easy reading
 - **Source Citations**: The system displays the source documents used to generate responses
+- **Mobile Responsive**: Optimized interface for mobile devices with touch-friendly controls
+- **Tag-based Filtering**: Filter conversations and documents by tags with advanced search capabilities
 
 To use the conversational interface:
 
-1. Select a collection from the dropdown
-2. (Optional) Select a specific model
-3. Type your question in the message box
-4. Press Enter or click "Send Message"
-5. View the AI's response and the sources used
-6. Continue the conversation with follow-up questions
+1. Select a collection from the dropdown (or choose to search all collections)
+2. (Optional) Select specific tags to filter your document search
+3. (Optional) Select a specific LLM model and provider
+4. Type your question in the message box
+5. Press Enter or click "Send Message"
+6. View the AI's response and the sources used
+7. Continue the conversation with follow-up questions
 
-The system will maintain context between questions, allowing for a more natural conversation flow.
+The system will maintain context between questions, allowing for a more natural conversation flow. On mobile devices, the conversation sidebar can be toggled using the sidebar button in the top navigation.
 
 ## Examples
 
@@ -358,17 +398,22 @@ def query_documents(collection_name, query_text, n_results=5, tags=None):
     return response.json()
 
 # WebSocket chat client
-async def chat_websocket(collection_name, query, history=None, model=None):
+async def chat_websocket(query, tags=None, history=None, model=None, include_untagged=True):
     uri = f"ws://localhost:8000/api/v1/chat/ws"
     async with websockets.connect(uri) as websocket:
         # Send chat message
-        await websocket.send(json.dumps({
+        message = {
             "type": "chat",
-            "collection_name": collection_name,
             "query": query,
             "history": history or [],
-            "model": model
-        }))
+            "include_untagged": include_untagged
+        }
+        if tags:
+            message["tags"] = tags
+        if model:
+            message["model"] = model
+            
+        await websocket.send(json.dumps(message))
         
         # Process responses
         full_response = ""
@@ -425,22 +470,28 @@ if __name__ == "__main__":
     important_results = query_documents("my_docs", "What is RAG?", tags=["important", "personal"])
     
     # Chat with WebSocket - Single query
-    asyncio.run(chat_websocket("my_docs", "Explain RAG in simple terms."))
+    asyncio.run(chat_websocket("Explain RAG in simple terms."))
+    
+    # Chat with WebSocket - Query with tag filtering
+    asyncio.run(chat_websocket(
+        "What can you tell me about my house documents?", 
+        tags=["house", "important"]
+    ))
     
     # Chat with WebSocket - Conversation with history
     async def conversation_example():
         # First query
         print("\n--- Starting conversation ---")
-        response = await chat_websocket("my_docs", "Explain RAG in simple terms.")
+        response = await chat_websocket("Explain RAG in simple terms.")
         
         # Get the updated history from the response
         conversation_history = response["history"]
         
-        # Follow-up query using the conversation history
-        print("\n--- Follow-up question ---")
+        # Follow-up query using the conversation history with tag filtering
+        print("\n--- Follow-up question with tag filtering ---")
         response = await chat_websocket(
-            "my_docs", 
             "What are the main benefits compared to traditional approaches?",
+            tags=["important", "personal"],
             history=conversation_history
         )
         
@@ -448,7 +499,6 @@ if __name__ == "__main__":
         conversation_history = response["history"]
         print("\n--- Another follow-up question ---")
         await chat_websocket(
-            "my_docs", 
             "Can you give me a simple code example?",
             history=conversation_history
         )

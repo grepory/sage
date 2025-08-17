@@ -9,6 +9,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Manual start**: `uvicorn app.main:app --reload --host 0.0.0.0 --port 8000`
 - **Install dependencies**: `pip install -r requirements.txt`
 
+### Configuration Commands
+- **Port configuration**: Set `PORT=3000` in `.env` to run on different port
+- **Reverse proxy setup**: Set `ROOT_PATH=/ragu` in `.env` for proxy deployments
+- **LLM provider setup**: Configure `DEFAULT_LLM_PROVIDER` and associated API keys in `.env`
+
 ### Testing
 - Test files are present (`test_*.py`) but no standardized test runner is configured
 - Individual test files can be run with `python test_<name>.py`
@@ -42,6 +47,7 @@ RAGU is a FastAPI-based RAG (Retrieval-Augmented Generation) system with the fol
 - **WebSocket chat**: Real-time streaming chat with conversation history at `/api/v1/chat/ws`
 - **Vector collections**: Organized document storage with semantic search
 - **Web interface**: Responsive HTML/JS frontend with drag-drop upload and conversational UI
+- **Mobile responsive design**: Optimized for mobile devices with collapsible sidebar and touch-friendly controls
 - **Conversation management**: Persistent chat history with sidebar navigation
 - **Advanced tag filtering**: Multi-select tag filtering with search and autocomplete
 
@@ -53,8 +59,10 @@ RAGU is a FastAPI-based RAG (Retrieval-Augmented Generation) system with the fol
 
 ### Configuration
 - **Settings** (`app/core/config.py`): Pydantic-based configuration with environment variables
+- **Server settings**: `PORT` and `ROOT_PATH` for deployment flexibility
 - **LLM providers**: Configurable via `DEFAULT_LLM_PROVIDER` environment variable
 - **Model selection**: Runtime model selection via API `provider:model` format
+- **Reverse proxy support**: Built-in support for deployment behind reverse proxies
 
 ### Frontend Components
 - **Templates** (`app/templates/`): Jinja2 HTML templates
@@ -127,6 +135,8 @@ RAGU uses a cohesive color palette defined as CSS custom properties in `app/stat
 - Components use `var(--color-name)` references throughout
 - Consistent spacing using rem units and standard Bootstrap-compatible sizing
 - Responsive design with mobile-first approach for smaller screens
+- Mobile-specific styles with breakpoints at 768px and 480px
+- Collapsible sidebar with backdrop overlay on mobile devices
 
 ## Important Notes
 
@@ -136,3 +146,37 @@ RAGU uses a cohesive color palette defined as CSS custom properties in `app/stat
 - LLM provider switching without restart via API model parameter
 - Theme colors should be used consistently across all UI components
 - CSS custom properties enable easy theme maintenance and consistency
+- **Reverse proxy support**: Configure `ROOT_PATH` environment variable for deployment behind proxies
+- **Mobile optimization**: Sidebar collapses on mobile with touch-friendly controls and backdrop overlay
+- **Configurable port**: Set `PORT` environment variable to run on different ports
+- **API path configuration**: All JavaScript API calls use configurable base URL via `window.BASE_URL`
+
+## Environment Variables Reference
+
+All configuration is done through environment variables in `.env`:
+
+```bash
+# Server Configuration
+PORT=8000                    # Server port (default: 8000)
+ROOT_PATH=/ragu             # Root path for reverse proxy (default: empty)
+
+# Default LLM provider (ollama, anthropic, or openai)
+DEFAULT_LLM_PROVIDER=ollama
+
+# Ollama configuration
+OLLAMA_BASE_URL=http://localhost:11434
+OLLAMA_DEFAULT_MODEL=llama2
+OLLAMA_EMBED_MODEL=nomic-embed-text
+
+# Anthropic configuration (if using Anthropic)
+ANTHROPIC_API_KEY=your_anthropic_api_key
+ANTHROPIC_DEFAULT_MODEL=claude-3-haiku-20240307
+
+# OpenAI configuration (if using OpenAI)
+OPENAI_API_KEY=your_openai_api_key
+OPENAI_DEFAULT_MODEL=gpt-4o
+
+# Mistral configuration (for OCR functionality)
+MISTRAL_API_KEY=your_mistral_api_key
+MISTRAL_BASE_URL=https://api.mistral.ai
+```
