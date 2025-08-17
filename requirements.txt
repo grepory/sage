@@ -14,3 +14,4 @@ pydantic>=2.11.7
 pydantic-settings>=2.10.1
 python-dotenv>=1.1.1
 mistralai>=1.9.3
+langchain>=0.3.27
