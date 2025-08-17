@@ -800,7 +800,7 @@ const ModelQueryComponent = {
             
             try {
                 // Send request to update the conversation
-                const response = await fetch(`/api/v1/conversations/${conversation.id}`, {
+                const response = await fetch(`${window.BASE_URL || ''}/api/v1/conversations/${conversation.id}`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json'

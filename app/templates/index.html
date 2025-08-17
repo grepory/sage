@@ -227,7 +227,7 @@
                 
                 try {
                     // Get all documents from the main collection
-                    const response = await fetch('/api/v1/documents/');
+                    const response = await fetch(`${window.BASE_URL || ''}/api/v1/documents/`);
                     if (response.ok) {
                         const data = await response.json();
                         const documents = data.documents || [];
@@ -293,7 +293,7 @@
                         searchParams.append('tags', tag);
                     });
                     
-                    const response = await fetch(`/api/v1/documents/search?${searchParams}`);
+                    const response = await fetch(`${window.BASE_URL || ''}/api/v1/documents/search?${searchParams}`);
                     
                     if (response.ok) {
                         const data = await response.json();
@@ -568,7 +568,7 @@
                 const totalTagsCount = document.getElementById('total-tags-count');
                 
                 try {
-                    const response = await fetch('/api/v1/tags/');
+                    const response = await fetch(`${window.BASE_URL || ''}/api/v1/tags/`);
                     if (response.ok) {
                         const data = await response.json();
                         allTags = data.tags || [];
@@ -787,7 +787,7 @@
                 
                 try {
                     // Update tags via API
-                    const response = await fetch('/api/v1/documents/tags', {
+                    const response = await fetch(`${window.BASE_URL || ''}/api/v1/documents/tags`, {
                         method: 'PUT',
                         headers: {
                             'Content-Type': 'application/json'
@@ -956,7 +956,7 @@
                 
                 try {
                     // Create the API endpoint for deleting by source from main collection
-                    const response = await fetch(`/api/v1/documents/by-source`, {
+                    const response = await fetch(`${window.BASE_URL || ''}/api/v1/documents/by-source`, {
                         method: 'DELETE',
                         headers: {
                             'Content-Type': 'application/json'
@@ -1068,7 +1068,7 @@
             // Load conversation history in sidebar
             async function loadConversationHistorySidebar() {
                 try {
-                    const response = await fetch('/api/v1/conversations/');
+                    const response = await fetch(`${window.BASE_URL || ''}/api/v1/conversations/`);
                     if (response.ok) {
                         const data = await response.json();
                         const conversations = data.conversations || [];
@@ -1139,7 +1139,7 @@
                 
                 if (confirmDelete) {
                     try {
-                        const response = await fetch(`/api/v1/conversations/${conversationId}`, {
+                        const response = await fetch(`${window.BASE_URL || ''}/api/v1/conversations/${conversationId}`, {
                             method: 'DELETE'
                         });
                         
@@ -1285,7 +1285,7 @@
                             formData.append('file', file);
                             formData.append('collection_name', 'documents');  // Use main collection
                             
-                            const response = await fetch('/api/v1/documents/upload', {
+                            const response = await fetch(`${window.BASE_URL || ''}/api/v1/documents/upload`, {
                                 method: 'POST',
                                 body: formData
                             });
@@ -1493,7 +1493,7 @@
                             }
                             
                             try {
-                                const response = await fetch('/api/v1/documents/tags', {
+                                const response = await fetch(`${window.BASE_URL || ''}/api/v1/documents/tags`, {
                                     method: 'PUT',
                                     headers: {
                                         'Content-Type': 'application/json'
@@ -1590,7 +1590,7 @@
                     const formData = new FormData();
                     formData.append('source_filename', fileName);
                     
-                    const response = await fetch('/api/v1/documents/suggest-tags', {
+                    const response = await fetch(`${window.BASE_URL || ''}/api/v1/documents/suggest-tags`, {
                         method: 'POST',
                         body: formData
                     });
@@ -1659,7 +1659,7 @@
                     const formData = new FormData();
                     formData.append('source_filename', fileName);
                     
-                    const response = await fetch('/api/v1/documents/suggest-tags', {
+                    const response = await fetch(`${window.BASE_URL || ''}/api/v1/documents/suggest-tags`, {
                         method: 'POST',
                         body: formData
                     });
@@ -1817,7 +1817,7 @@
                 }
                 
                 try {
-                    const response = await fetch('/api/v1/documents/tags', {
+                    const response = await fetch(`${window.BASE_URL || ''}/api/v1/documents/tags`, {
                         method: 'PUT',
                         headers: {
                             'Content-Type': 'application/json'
