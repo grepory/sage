@@ -27,7 +27,7 @@ RAGU is a complete RAG (Retrieval-Augmented Generation) management and interroga
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/ragu.git
+   git clone https://github.com/grepory/ragu.git
    cd ragu
    ```
 
@@ -79,29 +79,6 @@ RAGU can be configured through environment variables in the `.env` file:
 
 - `PORT=8000` - Port for the FastAPI server
 - `ROOT_PATH=/ragu` - Root path prefix for reverse proxy setup (e.g., for hosting at http://example.com/ragu/)
-
-### Reverse Proxy Setup
-
-RAGU supports deployment behind reverse proxies. To configure:
-
-1. Set the `ROOT_PATH` environment variable to your proxy path:
-   ```bash
-   ROOT_PATH=/ragu
-   ```
-
-2. Configure your reverse proxy (nginx, Apache, etc.) to forward requests to RAGU
-3. All API calls and static assets will automatically use the configured root path
-
-Example nginx configuration:
-```nginx
-location /ragu/ {
-    proxy_pass http://localhost:8000/;
-    proxy_set_header Host $host;
-    proxy_set_header X-Real-IP $remote_addr;
-    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-    proxy_set_header X-Forwarded-Proto $scheme;
-}
-```
 
 ### LLM Provider Configuration
 
@@ -331,13 +308,12 @@ The chat interface allows you to have natural conversations with the AI about yo
 
 To use the conversational interface:
 
-1. Select a collection from the dropdown (or choose to search all collections)
-2. (Optional) Select specific tags to filter your document search
-3. (Optional) Select a specific LLM model and provider
-4. Type your question in the message box
-5. Press Enter or click "Send Message"
-6. View the AI's response and the sources used
-7. Continue the conversation with follow-up questions
+1. Select a a set of tags from the dropdown (or choose to search all tags)
+2. (Optional) Select a specific LLM model and provider
+3. Type your question in the message box
+4. Press Enter or click "Send Message"
+5. View the AI's response and the sources used
+6. Continue the conversation with follow-up questions
 
 The system will maintain context between questions, allowing for a more natural conversation flow. On mobile devices, the conversation sidebar can be toggled using the sidebar button in the top navigation.
 
