@@ -1,7 +1,8 @@
 import os
 import tempfile
 from typing import Optional, Tuple
-from mistralai import Mistral, File
+from mistralai.client import Mistral
+from mistralai.client.models import File
 from app.core.config import settings
 
 
