@@ -1,6 +1,6 @@
-# RAGU: Retrieval-Augmented Generation Utility
+# SAGE: Personal RAG-enabled Information Retrieval Utility
 
-RAGU is a complete RAG (Retrieval-Augmented Generation) management and interrogation system built with FastAPI and ChromaDB. It provides a powerful API for document management, vector storage, and LLM-powered chat functionality with support for multiple LLM providers.
+SAGE is a complete RAG (Retrieval-Augmented Generation) management and interrogation system built with FastAPI and ChromaDB. It provides a powerful API for document management, vector storage, and LLM-powered chat functionality with support for multiple LLM providers.
 
 ## Features
 
@@ -27,8 +27,8 @@ RAGU is a complete RAG (Retrieval-Augmented Generation) management and interroga
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/grepory/ragu.git
-   cd ragu
+   jj git clone --colocate https://github.com/grepory/sage.git
+   cd sage
    ```
 
 2. Create and activate a virtual environment (optional but recommended):
@@ -73,12 +73,12 @@ The API will be available at http://localhost:8000, and the API documentation at
 
 ## Configuration
 
-RAGU can be configured through environment variables in the `.env` file:
+Sage can be configured through environment variables in the `.env` file:
 
 ### Server Configuration
 
 - `PORT=8000` - Port for the FastAPI server
-- `ROOT_PATH=/ragu` - Root path prefix for reverse proxy setup (e.g., for hosting at http://example.com/ragu/)
+- `ROOT_PATH=/sage` - Root path prefix for reverse proxy setup (e.g., for hosting at http://example.com/sage/)
 
 ### LLM Provider Configuration
 
@@ -286,7 +286,7 @@ The server will respond with messages in the following formats:
 
 ## Web Interface
 
-RAGU provides a responsive web interface that works seamlessly on desktop and mobile devices. The interface includes:
+Sage provides a responsive web interface that works seamlessly on desktop and mobile devices. The interface includes:
 
 ### Document Upload
 
