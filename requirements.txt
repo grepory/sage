@@ -16,3 +16,4 @@ python-dotenv>=1.1.1
 mistralai>=1.9.3
 langchain>=0.3.27
 langchain-community>=0.3.27
+langchain-text-splitters>=0.3.0

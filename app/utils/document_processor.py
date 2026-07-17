@@ -5,7 +5,7 @@ import asyncio
 from typing import List, Dict, Any, Tuple
 import tempfile
 from functools import wraps
-from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.document_loaders import (
     TextLoader,
     PyPDFLoader,
