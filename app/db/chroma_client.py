@@ -134,11 +134,23 @@ class ChromaClient:
             ids: Optional list of document IDs
         """
         collection = self.get_or_create_collection(collection_name)
-        collection.add(
-            documents=documents,
-            metadatas=metadatas,
-            ids=ids
-        )
+
+        # ChromaDB enforces a maximum number of records per add() call. Large
+        # documents (e.g. a multi-thousand-page PDF) can produce more chunks
+        # than that limit, so split the insert into sub-batches.
+        try:
+            max_batch = int(self.client.get_max_batch_size())
+        except Exception:
+            max_batch = 5000
+        max_batch = max(1, max_batch)
+
+        for start in range(0, len(documents), max_batch):
+            end = start + max_batch
+            collection.add(
+                documents=documents[start:end],
+                metadatas=metadatas[start:end] if metadatas is not None else None,
+                ids=ids[start:end] if ids is not None else None
+            )
     
     def query_collection(
         self,
@@ -593,11 +605,21 @@ class ChromaClient:
                     metadatas_to_update.append(updated_metadata)
             
             if ids_to_update:
-                collection.update(
-                    ids=ids_to_update,
-                    metadatas=metadatas_to_update
-                )
-            
+                # ChromaDB caps records per update() call; batch large updates
+                # (e.g. re-tagging a multi-thousand-chunk document).
+                try:
+                    max_batch = int(self.client.get_max_batch_size())
+                except Exception:
+                    max_batch = 5000
+                max_batch = max(1, max_batch)
+
+                for start in range(0, len(ids_to_update), max_batch):
+                    end = start + max_batch
+                    collection.update(
+                        ids=ids_to_update[start:end],
+                        metadatas=metadatas_to_update[start:end]
+                    )
+
             return len(ids_to_update)
             
         except Exception as e:

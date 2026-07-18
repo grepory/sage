@@ -22,7 +22,13 @@
       "Bash(lsof:*)",
       "mcp__playwright__browser_file_upload",
       "mcp__playwright__browser_wait_for",
-      "Bash(pip install:*)"
+      "Bash(pip install:*)",
+      "mcp__plugin_playwright_playwright__browser_navigate",
+      "mcp__plugin_playwright_playwright__browser_evaluate",
+      "mcp__plugin_playwright_playwright__browser_hover",
+      "mcp__plugin_playwright_playwright__browser_close",
+      "Skill(claude-api)",
+      "Bash(python3 -W error::SyntaxWarning -c \"import ast; ast.parse\\(open\\('app/services/llm_service.py'\\).read\\(\\)\\); print\\('parse OK, no SyntaxWarning'\\)\")"
     ]
   },
   "enableAllProjectMcpServers": false

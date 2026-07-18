@@ -42,7 +42,7 @@ class Settings(BaseSettings):
     
     # LLM provider settings
     DEFAULT_LLM_PROVIDER: LLMProvider = Field(
-        default=LLMProvider(os.getenv("DEFAULT_LLM_PROVIDER", "ollama")),
+        default=LLMProvider(os.getenv("DEFAULT_LLM_PROVIDER", "anthropic")),
         description="Default LLM provider to use (ollama, anthropic, openai)"
     )
     
@@ -66,7 +66,7 @@ class Settings(BaseSettings):
         description="Anthropic API key"
     )
     ANTHROPIC_DEFAULT_MODEL: str = Field(
-        default=os.getenv("ANTHROPIC_DEFAULT_MODEL", "claude-3-haiku-20240307"),
+        default=os.getenv("ANTHROPIC_DEFAULT_MODEL", "claude-sonnet-5"),
         description="Default Anthropic model to use"
     )
     
@@ -76,7 +76,7 @@ class Settings(BaseSettings):
         description="OpenAI API key"
     )
     OPENAI_DEFAULT_MODEL: str = Field(
-        default=os.getenv("OPENAI_DEFAULT_MODEL", "gpt-4o"),
+        default=os.getenv("OPENAI_DEFAULT_MODEL", "gpt-5.6-sol"),
         description="Default OpenAI model to use"
     )
     
@@ -92,7 +92,7 @@ class Settings(BaseSettings):
     
     # For backward compatibility
     DEFAULT_MODEL: str = Field(
-        default=os.getenv("DEFAULT_MODEL", "llama2"),
+        default=os.getenv("DEFAULT_MODEL", "claude-sonnet-5"),
         description="Default LLM model to use (legacy, use provider-specific settings instead)"
     )
     

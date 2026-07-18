@@ -48,10 +48,16 @@ Think of yourself as Sage - a helpful research assistant who loves making inform
 - Use natural transitions between ideas rather than bullet points unless they truly improve clarity
 
 ## Citation Style:
-- **Always cite your sources** using the exact document names and page/section information in square brackets
-- Weave citations naturally into sentences: "According to [Document.pdf, page 5]..." or "The guidelines in [HOA-Rules.docx, section 2 of 15] mention that..."
-- Use the exact format provided in the context
-- For multiple sources: "[Document1.pdf, page 3] and [Rules.docx, section 5 of 12] both indicate..."
+The context below is a **numbered list of sources**. Each source starts with its number in brackets, like `[1]`, `[2]`, and so on.
+
+- Whenever you use information from a source, cite it inline using this EXACT format: `[[cite:N|label]]`
+  - `N` is the source number — the bracketed number that appears in front of that source in the context.
+  - `label` is a SHORT, human-readable reference for what you're citing — a section, rule, page, or a few-word name (e.g. `§ CC&R 4.2`, `page 12`, `Palette Guide`). Keep labels under ~24 characters.
+- Place the citation immediately after the sentence or clause it supports: "...before work begins [[cite:1|§ CC&R 4.2]]."
+- Cite every claim you draw from the sources. If more than one source supports a point, add multiple citations back to back: "[[cite:1|§ 4.2]] [[cite:3|Palette Guide]]".
+- Only ever cite a number that actually appears in the context. Never invent a source number.
+- Do NOT use any other citation format — no bare document names in square brackets.
+- Emit the token EXACTLY as `[[cite:N|label]]` with nothing wrapped around it. Do NOT wrap it in braces or a LaTeX command (no `{...}`, no `\\cite{...}`, no `$...$`). The `label` is plain text — never put `{`, `}`, or `$` characters inside it.
 
 ## Response Structure:
 - **Start with the direct answer** - Don't bury the lead
@@ -393,9 +399,10 @@ class LLMService:
                     elif "chunk" in metadata and metadata.get("total_chunks", 0) > 1:
                         page_info = f", section {metadata['chunk'] + 1} of {metadata['total_chunks']}"
                     
-                    context_texts.append(f"[{doc_name}{page_info}]: {text}")
+                    context_texts.append(f"[{i + 1}] ({doc_name}{page_info}): {text}")
                     sources.append({
                         "id": doc_id,
+                        "index": i + 1,
                         "text": text[:100] + "..." if len(text) > 100 else text,
                         "metadata": metadata,
                         "display_name": f"{doc_name}{page_info}"
@@ -507,9 +514,10 @@ class LLMService:
                     elif "chunk" in metadata and metadata.get("total_chunks", 0) > 1:
                         page_info = f", section {metadata['chunk'] + 1} of {metadata['total_chunks']}"
                     
-                    context_texts.append(f"[{doc_name}{page_info}]: {text}")
+                    context_texts.append(f"[{i + 1}] ({doc_name}{page_info}): {text}")
                     sources.append({
                         "id": doc_id,
+                        "index": i + 1,
                         "text": text[:100] + "..." if len(text) > 100 else text,
                         "metadata": metadata,
                         "display_name": f"{doc_name}{page_info}"

@@ -5,12 +5,10 @@ const availableModels = [
     { value: 'ollama:llama2', label: 'Ollama: Llama 2' },
     { value: 'ollama:mistral', label: 'Ollama: Mistral' },
     { value: 'ollama:nomic-embed-text', label: 'Ollama: Nomic Embed Text' },
-    { value: 'anthropic:claude-3-haiku-20240307', label: 'Anthropic: Claude 3 Haiku' },
-    { value: 'anthropic:claude-3-sonnet-20240229', label: 'Anthropic: Claude 3 Sonnet' },
-    { value: 'anthropic:claude-3-opus-20240229', label: 'Anthropic: Claude 3 Opus' },
-    { value: 'openai:gpt-4o', label: 'OpenAI: GPT-4o' },
-    { value: 'openai:gpt-4-turbo', label: 'OpenAI: GPT-4 Turbo' },
-    { value: 'openai:gpt-3.5-turbo', label: 'OpenAI: GPT-3.5 Turbo' }
+    { value: 'anthropic:claude-sonnet-5', label: 'Anthropic: Claude Sonnet 5' },
+    { value: 'anthropic:claude-opus-4-8', label: 'Anthropic: Claude Opus 4.8' },
+    { value: 'anthropic:claude-haiku-4-5', label: 'Anthropic: Claude Haiku 4.5' },
+    { value: 'openai:gpt-5.6-sol', label: 'OpenAI: GPT-5.6 Sol' }
 ];
 
 // Create Vue app
@@ -24,40 +22,46 @@ const ModelQueryComponent = {
                 
                 <div v-if="conversationHistory.length > 0" class="conversation-history">
                     <div class="conversation-container p-3">
-                        <div v-for="(message, index) in conversationHistory" :key="index" 
-                             :class="['message mb-2 p-2 rounded', message.role === 'user' ? 'user-message text-end' : 'assistant-message']">
-                            <div class="message-header mb-1">
-                                <small class="fw-bold">
-                                    <i v-if="message.role === 'user'" class="bi bi-person-circle me-1"></i>
-                                    {{ message.role === 'user' ? 'You' : 'Sage' }}
-                                </small>
+                        <div v-for="(message, index) in conversationHistory" :key="index"
+                             :class="['msg-row', message.role === 'user' ? 'msg-user' : 'msg-assistant']">
+                            <!-- User message -->
+                            <div v-if="message.role === 'user'" class="user-bubble">
+                                {{ message.content }}
+                                <div class="message-actions">
+                                    <button
+                                        class="retry-btn"
+                                        @click="retryMessage(index)"
+                                        :disabled="isLoading"
+                                        title="Retry with current tag selection"
+                                        aria-label="Retry"
+                                    >
+                                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><polyline points="21 3 21 9 15 9"/></svg>
+                                    </button>
+                                </div>
                             </div>
-                            <div class="message-content">
-                                <div v-if="message.role === 'user'">
-                                    {{ message.content }}
-                                    <div class="message-actions mt-1">
-                                        <button 
-                                            class="btn btn-sm btn-outline-secondary retry-btn"
-                                            @click="retryMessage(index)"
-                                            :disabled="isLoading"
-                                            title="Retry with current tag selection"
-                                        >
-                                            <i class="bi bi-arrow-clockwise"></i>
-                                        </button>
+                            <!-- Assistant message -->
+                            <template v-else>
+                                <div class="assistant-avatar">S</div>
+                                <div class="assistant-body">
+                                    <div class="markdown-content" v-html="parseMarkdown(message.content, index)" @click="handleContentClick"></div>
+                                    <div v-if="message.sources && message.sources.length" class="sources-row">
+                                        <span class="sources-label">Sources</span>
+                                        <span v-for="(src, sIdx) in message.sources" :key="sIdx"
+                                              :id="'src-' + index + '-' + (sIdx + 1)"
+                                              class="source-chip">
+                                            <svg class="src-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                                            {{ src.display_name }}
+                                        </span>
                                     </div>
                                 </div>
-                                <div v-else v-html="parseMarkdown(message.content)" class="markdown-content"></div>
-                            </div>
+                            </template>
                         </div>
-                        
+
                         <!-- Typing indicator -->
-                        <div v-if="isLoading && conversationHistory.length > 0" class="message mb-2 p-2 rounded assistant-message">
-                            <div class="message-header mb-1">
-                                <small class="fw-bold">
-                                    <span class="typing-text-pulse">Sage is typing...</span>
-                                </small>
-                            </div>
-                            <div class="message-content">
+                        <div v-if="isLoading && conversationHistory.length > 0" class="msg-row msg-assistant">
+                            <div class="assistant-avatar">S</div>
+                            <div class="assistant-body">
+                                <div class="typing-text-pulse">Sage is typing…</div>
                             </div>
                         </div>
                     </div>
@@ -105,7 +109,7 @@ const ModelQueryComponent = {
                                 @click="toggleTagDropdown"
                                 style="min-width: 120px;"
                             >
-                                <i class="bi bi-tags me-1"></i>
+                                <svg class="chip-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
                                 <span v-if="selectedTags.length === 0">All docs</span>
                                 <span v-else>{{ selectedTags.length }} tag{{ selectedTags.length !== 1 ? 's' : '' }}</span>
                             </button>
@@ -201,20 +205,21 @@ const ModelQueryComponent = {
                         id="query-textarea"
                         class="form-control"
                         v-model="queryText"
-                        placeholder="Type your message here..."
-                        rows="2"
+                        placeholder="Message Sage…"
+                        rows="1"
                         @keydown.enter.prevent="handleEnterKey"
+                        @input="autoGrow"
                     ></textarea>
-                    
+
                     <!-- Submit button -->
-                    <button 
-                        class="btn btn-primary send-button"
+                    <button
+                        class="send-button"
                         @click="submitQuery"
                         :disabled="isLoading || !canSubmit"
+                        aria-label="Send"
                     >
-                        <i v-if="!isLoading" class="bi bi-send"></i>
+                        <svg v-if="!isLoading" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
                         <span v-if="isLoading" class="loading-spinner"></span>
-                        <span class="button-text">{{ isLoading ? 'Processing...' : 'Send' }}</span>
                     </button>
                 </div>
                 
@@ -248,7 +253,7 @@ const ModelQueryComponent = {
         const tagDropdownOpen = ref(false);
         const tagSearchInput = ref(null);
         const models = ref(availableModels);
-        const selectedModel = ref('');
+        const selectedModel = ref('anthropic:claude-sonnet-5');
         const queryText = ref('');
         const isLoading = ref(false);
         const error = ref('');
@@ -728,9 +733,11 @@ const ModelQueryComponent = {
                     const data = await response.json();
                     results.value = data;
                     
-                    // Update conversation history with the response
-                    conversationHistory.value = data.history;
-                    
+                    // Update conversation history with the response, preserving
+                    // per-message sources and attaching this turn's sources to
+                    // the newest assistant message so it renders its Sources row.
+                    conversationHistory.value = mergeHistoryWithSources(data.history, data.sources);
+
                     // Update last sources
                     lastSources.value = data.sources;
                     
@@ -925,9 +932,11 @@ const ModelQueryComponent = {
                     const data = await response.json();
                     results.value = data;
                     
-                    // Update conversation history with the response
-                    conversationHistory.value = data.history;
-                    
+                    // Update conversation history with the response, preserving
+                    // per-message sources and attaching this turn's sources to
+                    // the newest assistant message so it renders its Sources row.
+                    conversationHistory.value = mergeHistoryWithSources(data.history, data.sources);
+
                     // Update last sources
                     lastSources.value = data.sources;
                     
@@ -977,10 +986,18 @@ const ModelQueryComponent = {
             }
         };
         
-        // Parse markdown content
-        const parseMarkdown = (content) => {
+        // Escape HTML special characters for safe interpolation
+        const escapeHtml = (str) => {
+            const div = document.createElement('div');
+            div.textContent = str == null ? '' : String(str);
+            return div.innerHTML;
+        };
+
+        // Parse markdown content, converting [[cite:N|label]] tokens into
+        // clickable citation chips bound to this message's sources row.
+        const parseMarkdown = (content, messageIndex) => {
             if (!content) return '';
-            
+
             // Configure marked.js for security and formatting
             marked.setOptions({
                 breaks: true, // Convert line breaks to <br>
@@ -989,8 +1006,67 @@ const ModelQueryComponent = {
                 smartLists: true,
                 smartypants: false
             });
-            
-            return marked.parse(content);
+
+            // Pull citation tokens out BEFORE markdown parsing so marked can't
+            // mangle the bracket syntax or punctuation in the label.
+            const chips = [];
+            const guarded = content.replace(/\[\[cite:(\d+)\|([^\]]*?)\]\]/g, (match, n, label) => {
+                const token = `%%CITE${chips.length}%%`;
+                chips.push({ n: parseInt(n, 10), label: label.trim() });
+                return token;
+            });
+
+            let html = marked.parse(guarded);
+
+            // Re-insert citation chips as clickable spans that point at the
+            // matching source in this message's Sources row.
+            chips.forEach((chip, i) => {
+                const target = (messageIndex !== undefined && messageIndex !== null)
+                    ? `src-${messageIndex}-${chip.n}`
+                    : '';
+                const chipHtml = `<span class="citation-chip" data-target="${target}" role="button" tabindex="0" title="Jump to source ${chip.n}">${escapeHtml(chip.label)}</span>`;
+                html = html.replace(`%%CITE${i}%%`, chipHtml);
+            });
+
+            return html;
+        };
+
+        // Delegated click handler for inline citation chips: scroll to and
+        // briefly highlight the corresponding source chip.
+        const handleContentClick = (event) => {
+            const chip = event.target.closest('.citation-chip');
+            if (!chip) return;
+            const targetId = chip.getAttribute('data-target');
+            if (!targetId) return;
+            const el = document.getElementById(targetId);
+            if (!el) return;
+            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            el.classList.add('source-chip-flash');
+            setTimeout(() => el.classList.remove('source-chip-flash'), 1300);
+        };
+
+        // Auto-grow the composer textarea as the user types.
+        const autoGrow = (event) => {
+            const el = event && event.target ? event.target : document.getElementById('query-textarea');
+            if (!el) return;
+            el.style.height = 'auto';
+            el.style.height = Math.min(el.scrollHeight, 200) + 'px';
+        };
+
+        // Preserve per-message sources across a history replacement, and attach
+        // the latest retrieval's sources to the newest assistant message.
+        const mergeHistoryWithSources = (newHistory, newSources) => {
+            const priorSources = conversationHistory.value.map(m => m && m.sources);
+            const merged = (newHistory || []).map((m, i) => (
+                priorSources[i] ? { ...m, sources: priorSources[i] } : { ...m }
+            ));
+            for (let i = merged.length - 1; i >= 0; i--) {
+                if (merged[i].role === 'assistant') {
+                    if (newSources && newSources.length) merged[i].sources = newSources;
+                    break;
+                }
+            }
+            return merged;
         };
         
         // Show notification for auto-selected tags
@@ -1070,7 +1146,9 @@ const ModelQueryComponent = {
             renameConversation,
             confirmDeleteConversation,
             retryMessage,
-            parseMarkdown
+            parseMarkdown,
+            handleContentClick,
+            autoGrow
         };
     }
 };
