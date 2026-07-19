@@ -470,7 +470,8 @@ class LLMService:
         model: Optional[str] = None,
         streaming: bool = False,
         callback_handler: Optional[StreamingCallbackHandler] = None,
-        n_results: int = 5
+        n_results: int = 5,
+        web_search: bool = False
     ) -> Dict[str, Any]:
         """Generate RAG response using tag-based document filtering.
         
@@ -549,8 +550,38 @@ class LLMService:
             query=query
         )
         
+        # Web search is a native Anthropic server tool, so it only applies when
+        # the active provider is Anthropic. For any other provider (or when the
+        # toggle is off) fall back to the standard LlamaIndex generation path.
+        provider_enum, model_name = self._parse_model_string(model)
+        use_web_search = (
+            web_search
+            and provider_enum == LLMProvider.ANTHROPIC
+            and ANTHROPIC_AVAILABLE
+            and bool(settings.ANTHROPIC_API_KEY)
+        )
+
         # Generate response
-        if streaming:
+        if use_web_search:
+            from app.services.anthropic_web import (
+                generate_web_augmented_response,
+                WEB_SEARCH_INSTRUCTION,
+            )
+            anthropic_model = model_name or settings.ANTHROPIC_DEFAULT_MODEL
+            response, web_sources = await generate_web_augmented_response(
+                model=anthropic_model,
+                prompt=formatted_prompt + WEB_SEARCH_INSTRUCTION,
+                callback_handler=callback_handler if streaming else None,
+            )
+            # Surface any pages Claude actually searched as additional sources.
+            for ws in web_sources:
+                sources.append({
+                    "type": "web",
+                    "url": ws["url"],
+                    "display_name": ws["title"],
+                    "text": ws["title"],
+                })
+        elif streaming:
             # For streaming, we need to collect all tokens
             response_text = ""
             async for token in await llm.astream_complete(formatted_prompt):
@@ -560,22 +591,22 @@ class LLMService:
             # For non-streaming, we can just get the complete response
             response = await llm.acomplete(formatted_prompt)
             response = response.text
-        
+
         # Update history if provided
         updated_history = []
         if history:
             updated_history = history.copy()
-        
+
         # Add current exchange to history
         updated_history.append(ChatMessage(role="user", content=query))
         updated_history.append(ChatMessage(role="assistant", content=response))
-        
+
         return {
             "answer": response,
             "sources": sources,
             "history": updated_history
         }
-    
+
     async def suggest_tags(
         self,
         document_texts: List[str],
@@ -660,7 +691,8 @@ Suggested tags:"""
         streaming: bool = False,
         callback_handler: Optional[StreamingCallbackHandler] = None,
         n_results: int = 5,
-        auto_select_tags: bool = True
+        auto_select_tags: bool = True,
+        web_search: bool = False
     ) -> Dict[str, Any]:
         """Generate RAG response with automatic tag selection based on query content.
         
@@ -713,9 +745,10 @@ Suggested tags:"""
             model=model,
             streaming=streaming,
             callback_handler=callback_handler,
-            n_results=n_results
+            n_results=n_results,
+            web_search=web_search
         )
-        
+
         # Add the enhanced tags to the response
         result["selected_tags"] = enhanced_tags
         result["auto_selected_tags"] = [tag for tag in enhanced_tags if tag not in (tags or [])]

@@ -3163,6 +3163,58 @@ main {
     flex: none;
 }
 
+/* Web-sourced chips are clickable links out to the page Claude searched. */
+a.source-chip-web {
+    text-decoration: none;
+    cursor: pointer;
+    transition: border-color 0.15s ease, color 0.15s ease;
+}
+
+a.source-chip-web:hover {
+    border-color: var(--sage-icon);
+    color: var(--text-body);
+}
+
+a.source-chip-web .src-icon {
+    color: var(--sage-text);
+}
+
+/* Web search toggle in the composer controls. */
+.web-search-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 10px;
+    border-radius: 9px;
+    border: 1px solid rgba(255, 255, 255, .07);
+    background: var(--surface);
+    color: var(--text-secondary);
+    font-size: 12px;
+    cursor: pointer;
+    user-select: none;
+    white-space: nowrap;
+}
+
+.web-search-toggle input {
+    cursor: pointer;
+    margin: 0;
+    accent-color: var(--sage-text);
+}
+
+.web-search-toggle svg {
+    color: var(--sage-icon);
+    flex: none;
+}
+
+.web-search-toggle.disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+.web-search-toggle.disabled input {
+    cursor: not-allowed;
+}
+
 .source-chip-flash {
     animation: sourceFlash 1.3s ease;
 }

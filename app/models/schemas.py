@@ -105,6 +105,7 @@ class ChatRequest(BaseModel):
     conversation_id: Optional[str] = Field(None, description="ID of the conversation to continue")
     tags: Optional[List[str]] = Field(None, description="Tags to filter documents by")
     include_untagged: bool = Field(True, description="Whether to include untagged documents")
+    web_search: bool = Field(False, description="Enable Anthropic-native web search augmentation (Anthropic models only)")
 
 
 class ChatResponse(BaseModel):

@@ -39,6 +39,7 @@ async def websocket_endpoint(websocket: WebSocket):
                     conversation_id = message.get("conversation_id")
                     tags = message.get("tags")
                     include_untagged = message.get("include_untagged", True)
+                    web_search = message.get("web_search", False)
                     
                     # Validate required fields
                     if not query:
@@ -91,7 +92,8 @@ async def websocket_endpoint(websocket: WebSocket):
                         model=model,
                         streaming=True,
                         callback_handler=callback_handler,
-                        auto_select_tags=True
+                        auto_select_tags=True,
+                        web_search=web_search
                     )
                     
                     # Save or update the conversation
@@ -213,7 +215,8 @@ async def chat(request: ChatRequest):
             include_untagged=request.include_untagged,
             history=history,
             model=request.model,
-            auto_select_tags=True
+            auto_select_tags=True,
+            web_search=request.web_search
         )
         
         # Save or update the conversation

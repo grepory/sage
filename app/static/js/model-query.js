@@ -46,12 +46,19 @@ const ModelQueryComponent = {
                                     <div class="markdown-content" v-html="parseMarkdown(message.content, index)" @click="handleContentClick"></div>
                                     <div v-if="message.sources && message.sources.length" class="sources-row">
                                         <span class="sources-label">Sources</span>
-                                        <span v-for="(src, sIdx) in message.sources" :key="sIdx"
-                                              :id="'src-' + index + '-' + (sIdx + 1)"
-                                              class="source-chip">
-                                            <svg class="src-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-                                            {{ src.display_name }}
-                                        </span>
+                                        <template v-for="(src, sIdx) in message.sources" :key="sIdx">
+                                            <a v-if="src.type === 'web'" :href="src.url" target="_blank" rel="noopener noreferrer"
+                                               class="source-chip source-chip-web">
+                                                <svg class="src-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                                                {{ src.display_name }}
+                                            </a>
+                                            <span v-else
+                                                  :id="'src-' + index + '-' + (sIdx + 1)"
+                                                  class="source-chip">
+                                                <svg class="src-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                                                {{ src.display_name }}
+                                            </span>
+                                        </template>
                                     </div>
                                 </div>
                             </template>
@@ -99,7 +106,15 @@ const ModelQueryComponent = {
                             </optgroup>
                         </select>
                     </div>
-                    
+
+                    <!-- Web search toggle (Anthropic-native) -->
+                    <label class="web-search-toggle" :class="{ disabled: !isAnthropicModel }"
+                           :title="isAnthropicModel ? 'Let Claude search the web when the documents do not cover it' : 'Web search requires an Anthropic model'">
+                        <input type="checkbox" v-model="webSearchEnabled" :disabled="!isAnthropicModel">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                        <span>Web</span>
+                    </label>
+
                     <!-- Tag selection -->
                     <div class="tag-selection-inline">
                         <div class="dropdown" :class="{ show: tagDropdownOpen }">
@@ -254,6 +269,9 @@ const ModelQueryComponent = {
         const tagSearchInput = ref(null);
         const models = ref(availableModels);
         const selectedModel = ref('anthropic:claude-sonnet-5');
+        const webSearchEnabled = ref(false);
+        // Web search is an Anthropic-native server tool, so it only applies to Anthropic models.
+        const isAnthropicModel = computed(() => (selectedModel.value || '').startsWith('anthropic'));
         const queryText = ref('');
         const isLoading = ref(false);
         const error = ref('');
@@ -267,6 +285,7 @@ const ModelQueryComponent = {
         // Local storage keys for persistence
         const STORAGE_KEY_COLLECTION = 'ragu_selected_collection';  // Deprecated
         const STORAGE_KEY_MODEL = 'ragu_selected_model';
+        const STORAGE_KEY_WEB_SEARCH = 'ragu_web_search';
         const STORAGE_KEY_TAGS = 'ragu_selected_tags';
         const STORAGE_KEY_INCLUDE_UNTAGGED = 'ragu_include_untagged';
         
@@ -348,6 +367,9 @@ const ModelQueryComponent = {
                     selectedModel.value = savedModel;
                 }
             }
+
+            // Load saved web search preference
+            webSearchEnabled.value = localStorage.getItem(STORAGE_KEY_WEB_SEARCH) === 'true';
             
             // Load saved tag preferences
             const savedTags = localStorage.getItem(STORAGE_KEY_TAGS);
@@ -420,6 +442,11 @@ const ModelQueryComponent = {
             if (newValue) {
                 localStorage.setItem(STORAGE_KEY_MODEL, newValue);
             }
+        });
+
+        // Persist the web search toggle
+        watch(webSearchEnabled, (newValue) => {
+            localStorage.setItem(STORAGE_KEY_WEB_SEARCH, newValue ? 'true' : 'false');
         });
         
         // Fetch available tags from API
@@ -707,7 +734,9 @@ const ModelQueryComponent = {
                     query: currentQuery,
                     history: conversationHistory.value.slice(0, -1), // Exclude the user message we just added
                     tags: selectedTags.value,
-                    include_untagged: includeUntagged.value
+                    include_untagged: includeUntagged.value,
+                    // Web search is Anthropic-native; only request it for Anthropic models.
+                    web_search: webSearchEnabled.value && (selectedModel.value || '').startsWith('anthropic')
                 };
                 
                 // Add model if selected
@@ -906,7 +935,9 @@ const ModelQueryComponent = {
                     query: userMessage.content,
                     history: conversationHistory.value.slice(0, -1), // Exclude the user message
                     tags: selectedTags.value,
-                    include_untagged: includeUntagged.value
+                    include_untagged: includeUntagged.value,
+                    // Web search is Anthropic-native; only request it for Anthropic models.
+                    web_search: webSearchEnabled.value && (selectedModel.value || '').startsWith('anthropic')
                 };
                 
                 // Add model if selected
@@ -1119,6 +1150,8 @@ const ModelQueryComponent = {
             availableTagsForSelection,
             models,
             selectedModel,
+            webSearchEnabled,
+            isAnthropicModel,
             queryText,
             isLoading,
             error,
